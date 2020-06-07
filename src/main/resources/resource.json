@@ -1,0 +1,16 @@
+{
+  "firstName": "Rack",
+  "lastName": "Jackon",
+  "gender": "MASCULIN",
+  "age": 24,
+  "address": {
+    "streetAddress": "126",
+    "city": "San Jone",
+    "state": "CA",
+    "postalCode": "394221"
+  },
+  "phoneNumbers": [
+    { "type": "home", "number": "7383627627", "countryCode": "ro" },
+    { "type": "work", "number": "7384568888", "countryCode": "ro" }
+  ]
+}
