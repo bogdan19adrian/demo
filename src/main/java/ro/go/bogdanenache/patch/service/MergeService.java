@@ -1,12 +1,12 @@
 package ro.go.bogdanenache.patch.service;
 
-import org.apache.commons.beanutils.*;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.springframework.stereotype.Service;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.commons.beanutils.BeanUtils.copyProperty;
 
@@ -14,7 +14,9 @@ import static org.apache.commons.beanutils.BeanUtils.copyProperty;
 @Service
 public class MergeService<T> {
 
-
+    /**
+     * stupid like atept
+     * */
     public <T> T merge(T local, T remote) throws IllegalAccessException, InstantiationException {
         Class<?> clazz = local.getClass();
         Object merged = clazz.newInstance();
@@ -37,7 +39,13 @@ public class MergeService<T> {
         }
         return (T) merged;
     }
-    public <T> T mergeWithBEanUtil(T local, T remote) throws IllegalAccessException, InstantiationException {
+
+    /**
+     * Partial update using a modified method of apache bean utils
+     *
+     * */
+
+    public <T, V> T mergeUsingBeanUtils(T local, V remote) throws IllegalAccessException, InstantiationException {
         try {
             copyProperties(local, remote);
         } catch (InvocationTargetException e) {
@@ -46,27 +54,38 @@ public class MergeService<T> {
         return local;
     }
 
-    public void copyProperties(final Object dest, final Object orig)
+    private void copyProperties(final Object dest, final Object orig)
             throws IllegalAccessException, InvocationTargetException {
         PropertyUtilsBean propertyUtilsBean = new PropertyUtilsBean();
-            final PropertyDescriptor[] origDescriptors =
-                    propertyUtilsBean.getPropertyDescriptors(orig);
-            for (PropertyDescriptor origDescriptor : origDescriptors) {
-                final String name = origDescriptor.getName();
-                if ("class".equals(name)) {
-                    continue; // No point in trying to set an object's class
-                }
-                if (propertyUtilsBean.isReadable(orig, name) &&
-                        propertyUtilsBean.isWriteable(dest, name)) {
-                    try {
-                        final Object value =
-                                propertyUtilsBean.getSimpleProperty(orig, name);
-                        copyProperty(dest, name, value);
-                    } catch (final NoSuchMethodException e) {
-                        // Should not happen
+        final PropertyDescriptor[] origDescriptors =
+                propertyUtilsBean.getPropertyDescriptors(orig);
+        for (PropertyDescriptor origDescriptor : origDescriptors) {
+            final String name = origDescriptor.getName();
+            if ("class".equals(name)) {
+                continue; // No point in trying to set an object's class
+            }
+            if (propertyUtilsBean.isReadable(orig, name) &&
+                    propertyUtilsBean.isWriteable(dest, name)) {
+                try {
+                    final Object origValue = propertyUtilsBean.getSimpleProperty(orig, name);
+                    final Object destValue = propertyUtilsBean.getSimpleProperty(dest, name);
+                    if (origValue instanceof Optional) {
+                        if (origValue == null) {
+                            copyProperty(dest, name, destValue);
+                        } else if (((Optional) origValue).isEmpty()) {
+                            copyProperty(dest, name, null);
+                        } else if (((Optional) origValue).get().getClass().getPackageName().startsWith("ro.go.bogdan")) {
+                            copyProperties(destValue,  ((Optional) origValue).get());
+                        } else {
+                            copyProperty(dest, name, ((Optional) origValue).get());
+                        }
                     }
+
+                } catch (final NoSuchMethodException e) {
+                    // Should not happen
                 }
             }
+        }
 
     }
 }

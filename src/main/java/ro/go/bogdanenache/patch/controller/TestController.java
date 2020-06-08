@@ -27,18 +27,16 @@ public class TestController {
     }
 
     @PatchMapping(value = "partial")
-    public ResponseEntity<PatchUserDTO> partialUpdateUser(@RequestBody PatchUserDTO user) {
+    public ResponseEntity<PatchUserDTO> partialUpdateUser(@RequestBody PatchUserDTO user) throws IllegalAccessException, InstantiationException {
         log.info("PATCH user");
         log.info("REQUEST user {}", user);
-        return null;
+        return  new ResponseEntity(testService.updateUserPartial(user), HttpStatus.OK);
     }
 
     @PatchMapping(value = "full")
-    public ResponseEntity<PatchUserDTO> fullUpdateUser(@RequestBody UserDTO request) throws IllegalAccessException, InstantiationException {
+    public ResponseEntity<PatchUserDTO> fullUpdateUser(@RequestBody UserDTO request)  {
         log.info("PATCH user");
         log.info("REQUEST user {}", request);
-
-        testService.updateUserPartial(request);
 
         return new ResponseEntity(testService.updateUserFull(request), HttpStatus.OK);
     }

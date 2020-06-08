@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import ro.go.bogdanenache.patch.api.UserDTO;
+import ro.go.bogdanenache.patch.api.update.PatchUserDTO;
 import ro.go.bogdanenache.patch.dao.TestDAO;
 
 @Service
@@ -23,9 +24,9 @@ public class TestService {
         return modelMapper.map(testDAO.getUser(), UserDTO.class);
     }
 
-    public UserDTO  updateUserPartial(UserDTO remoteUserDTO) throws InstantiationException, IllegalAccessException {
+    public UserDTO  updateUserPartial(PatchUserDTO remoteUserDTO) throws InstantiationException, IllegalAccessException {
         UserDTO localUserDTO = modelMapper.map(testDAO.getUser(), UserDTO.class);
-        return mergeService.mergeWithBEanUtil(localUserDTO, remoteUserDTO);
+        return mergeService.mergeUsingBeanUtils(localUserDTO, remoteUserDTO);
     }
 
     public UserDTO updateUserFull(UserDTO remoteUserDTO) {
